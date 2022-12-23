@@ -48,9 +48,11 @@ jobs:
             VERSIONS=$(npm view ${PACKAGE_NAME} versions --json)
             for i in $VERSIONS; do
               if [[ $i =~ ^\"(.*-${TAG}.*)\" ]]; then
-                npm unpublish ${PACKAGE_NAME}@${BASH_REMATCH[1]}
+                echo "npm unpublish ${PACKAGE_NAME}@${BASH_REMATCH[1]}"
+                npm unpublish ${PACKAGE_NAME}@${BASH_REMATCH[1]} >> unpublish.txt
               fi
             done
+            cat unpublish.txt
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
