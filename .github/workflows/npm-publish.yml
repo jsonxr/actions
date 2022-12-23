@@ -26,6 +26,33 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
+      - name: verify tag version
+        if: startsWith(github.ref, 'refs/heads/release/')
+        run: |
+          # Verify package.json and tag name match
+          TAG_VERSION=${GITHUB_REF#refs/*/}
+          PACKAGE_VERSION=`node -p "require('./package.json').version"`
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "package.json/version does not equal the tag name"
+            exit 1
+          fi
+
+      # Unpublish all versions that match the version in package.json
+      - name: unpublish all dev versions
+        if: startsWith(github.ref, 'refs/heads/dev/')
+        run: |
+          PACKAGE_NAME=`node -p "require('./package.json').name"`
+          if [[ ${{github.ref}} =~ ^refs/heads/(.*)/.*$ ]]; then
+            TAG=${BASH_REMATCH[1]}
+            # Get all versions in npm
+            VERSIONS=$(npm view ${PACKAGE_NAME} versions --json)
+            for i in $VERSIONS; do
+              if [[ $i =~ ^\"(.*-${TAG}.*)\" ]]; then
+                npm unpublish ${PACKAGE_NAME}@${BASH_REMATCH[1]}
+              fi
+            done
+          fi
+
       - name: publish
         if: startsWith(github.ref, 'refs/heads/release/')
         run: |
