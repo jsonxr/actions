@@ -15,15 +15,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: verify tag
-        run: |
-          # Verify package.json and tag name match
-          TAG_VERSION=${GITHUB_REF#refs/*/}
-          PACKAGE_VERSION=`node -p "require('./package.json').version"`
-          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "package.json/version does not equal the tag name"
-            exit 1
-          fi
       - name: setup node
         uses: actions/setup-node@v3
         with:
