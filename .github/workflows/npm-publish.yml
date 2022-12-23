@@ -52,6 +52,8 @@ jobs:
               fi
             done
           fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: publish
         if: startsWith(github.ref, 'refs/heads/release/')
