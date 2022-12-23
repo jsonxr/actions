@@ -21,6 +21,15 @@ jobs:
           node-version-file: '.node-version'
           cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
+      - name: verify tag
+        run: |
+          # Verify package.json and tag name match
+          TAG_VERSION=${GITHUB_REF#refs/*/}
+          PACKAGE_VERSION=`node -p "require('./package.json').version"`
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "package.json/version does not equal the tag name"
+            exit 1
+          fi
       - name: build
         run: |
           yarn install --frozen-lockfile

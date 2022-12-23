@@ -1,8 +1,11 @@
-name: test
+name: cicd
 on: workflow_call
 
+permissions:
+  pull-requests: write
+
 jobs:
-  test:
+  build:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
@@ -13,7 +16,9 @@ jobs:
         with:
           node-version-file: '.node-version'
           cache: 'yarn'
-      - name: lint, test
-        run: |
-          yarn install --frozen-lockfile
-          yarn test
+      - name: dependencies
+        run: yarn install --frozen-lockfile
+      - name: lint
+        run: yarn lint
+      - name: test
+        run: yarn test
