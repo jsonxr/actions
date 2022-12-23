@@ -27,7 +27,7 @@ jobs:
           yarn build
 
       - name: publish
-        if: startsWith(github.head_ref, 'release/')
+        if: startsWith(github.head_ref, 'refs/heads/release/')
         run: |
           # Verify package.json and tag name match
           TAG_VERSION=${GITHUB_REF#refs/*/}
@@ -43,7 +43,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: publish-dev
-        if: startsWith(github.head_ref, 'dev/')
+        if: startsWith(github.head_ref, 'refs/heads/dev/')
         run: |
           export prefix=dev
           export PACKAGE_VERSION=`node -p "require('./package.json').version"`
