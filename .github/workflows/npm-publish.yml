@@ -15,12 +15,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.node-version'
-          cache: 'yarn'
-          registry-url: 'https://registry.npmjs.org'
       - name: verify tag
         run: |
           # Verify package.json and tag name match
@@ -30,14 +24,36 @@ jobs:
             echo "package.json/version does not equal the tag name"
             exit 1
           fi
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.node-version'
+          cache: 'yarn'
+          registry-url: 'https://registry.npmjs.org'
       - name: build
         run: |
           yarn install --frozen-lockfile
           yarn build
+
       - name: publish
+        if: startsWith(github.head_ref, 'release/')
         run: |
           export PACKAGE_VERSION=`node -p "require('./package.json').version"`
           yarn version --new-version "$PACKAGE_VERSION"
           yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: publish-dev
+        if: startsWith(github.head_ref, 'dev/')
+        run: |
+          export prefix=dev
+
+          export PACKAGE_VERSION=`node -p "require('./package.json').version"`
+          export NPM_VERSION="$PACKAGE_VERSION-${prefix}.${GITHUB_SHA:0:7}"
+          yarn version --new-version "$NPM_VERSION" \
+            --preid ${prefix} --prerelease \
+            --no-git-tag-version
+          yarn publish --tag ${prefix}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
