@@ -26,13 +26,7 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-      - name: troubleshoot
-        run: |
-          echo github.ref = ${{ github.ref }}
-          echo github.head_ref = ${{ github.head_ref }}
-
       - name: verify tag version
-        if: startsWith(github.ref, 'refs/heads/release/')
         run: |
           # Verify package.json and tag name match
           TAG_VERSION=${GITHUB_REF#refs/*/}
@@ -43,7 +37,6 @@ jobs:
           fi
 
       - name: publish
-        if: startsWith(github.ref, 'refs/heads/release/')
         run: |
           # Verify package.json and tag name match
           TAG_VERSION=${GITHUB_REF#refs/*/}
