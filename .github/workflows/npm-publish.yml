@@ -38,8 +38,15 @@ jobs:
       - name: publish
         if: startsWith(github.head_ref, 'release/')
         run: |
-          export PACKAGE_VERSION=`node -p "require('./package.json').version"`
-          yarn version --new-version "$PACKAGE_VERSION"
+          # Verify package.json and tag name match
+          TAG_VERSION=${GITHUB_REF#refs/*/}
+          PACKAGE_VERSION=`node -p "require('./package.json').version"`
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "package.json/version does not equal the tag name"
+            exit 1
+          fi
+
+          # Now publish
           yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -48,12 +55,9 @@ jobs:
         if: startsWith(github.head_ref, 'dev/')
         run: |
           export prefix=dev
-
           export PACKAGE_VERSION=`node -p "require('./package.json').version"`
           export NPM_VERSION="$PACKAGE_VERSION-${prefix}.${GITHUB_SHA:0:7}"
-          yarn version --new-version "$NPM_VERSION" \
-            --preid ${prefix} --prerelease \
-            --no-git-tag-version
+          yarn version --new-version "$NPM_VERSION" --no-git-tag-version
           yarn publish --tag ${prefix}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
