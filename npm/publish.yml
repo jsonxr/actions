@@ -1,0 +1,33 @@
+name: Publish
+description: 'Publish to npm'
+
+inputs:
+  NPM_TOKEN:
+    description: “npm token used to publish package”
+    required: true
+
+runs:
+  using: 'composite'
+  timeout-minutes: 10
+  runs-on: ubuntu-latest
+  permissions:
+    contents: read
+    packages: write
+  steps:
+    - name: setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version-file: '.node-version'
+        cache: 'yarn'
+        registry-url: 'https://registry.npmjs.org'
+    - name: build
+      run: |
+        yarn install --frozen-lockfile
+        yarn build
+    - name: publish
+      run: |
+        export PACKAGE_VERSION=`node -p "require('./package.json').version"`
+        yarn version --new-version "$PACKAGE_VERSION"
+        yarn publish
+      env:
+        NODE_AUTH_TOKEN: ${{inputs.NPM_TOKEN}}

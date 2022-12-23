@@ -1,0 +1,17 @@
+name: Verify Tag
+description: 'Verify that the tag and the package.json matches'
+
+runs:
+  using: 'composite'
+  timeout-minutes: 10
+  runs-on: ubuntu-latest
+  steps:
+    - name: verify tag
+      run: |
+        # Verify package.json and tag name match
+        TAG_VERSION=${GITHUB_REF#refs/*/}
+        PACKAGE_VERSION=`node -p "require('./package.json').version"`
+        if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+          echo "package.json/version does not equal the tag name"
+          exit 1
+        fi
