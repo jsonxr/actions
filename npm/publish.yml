@@ -14,6 +14,8 @@ runs:
     contents: read
     packages: write
   steps:
+    - name: checkout
+      uses: actions/checkout@v3
     - name: setup node
       uses: actions/setup-node@v3
       with:
