@@ -57,6 +57,17 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: publish-dev
+        if: startsWith(github.ref, 'refs/heads/dev/')
+        run: |
+          export prefix=dev
+          export PACKAGE_VERSION=`node -p "require('./package.json').version"`
+          export NPM_VERSION="0.0.0-${prefix}.${GITHUB_SHA:0:7}"
+          yarn version --new-version "$NPM_VERSION" --no-git-tag-version
+          yarn publish --tag ${prefix}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: publish
         if: startsWith(github.ref, 'refs/heads/release/')
         run: |
@@ -70,16 +81,5 @@ jobs:
 
           # Now publish
           yarn publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: publish-dev
-        if: startsWith(github.ref, 'refs/heads/dev/')
-        run: |
-          export prefix=dev
-          export PACKAGE_VERSION=`node -p "require('./package.json').version"`
-          export NPM_VERSION="$PACKAGE_VERSION-${prefix}.${GITHUB_SHA:0:7}"
-          yarn version --new-version "$NPM_VERSION" --no-git-tag-version
-          yarn publish --tag ${prefix}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
